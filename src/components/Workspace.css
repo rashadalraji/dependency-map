@@ -5,6 +5,17 @@
   box-sizing: border-box;
 }
 
+.workspace__view-toggle {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 16px;
+}
+
+.workspace__view-toggle button[aria-pressed='true'] {
+  background: var(--accent-bg, rgba(170, 59, 255, 0.1));
+  border-color: var(--accent-border, rgba(170, 59, 255, 0.5));
+}
+
 .project-header__facts {
   display: flex;
   gap: 32px;

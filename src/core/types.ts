@@ -25,6 +25,11 @@ export interface Association {
   taskId: string
 }
 
+export interface TaskDependency {
+  dependentTaskId: string
+  prerequisiteTaskId: string
+}
+
 export interface Project {
   name: string
   targetDeadline: string
@@ -32,6 +37,7 @@ export interface Project {
   requirements: Requirement[]
   tasks: Task[]
   associations: Association[]
+  taskDependencies: TaskDependency[]
   nextRequirementSeq: number
   nextTaskSeq: number
 }

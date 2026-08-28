@@ -69,6 +69,10 @@ export function removeTask(project: Project, taskId: string): Project {
     ...project,
     tasks: project.tasks.filter((task) => task.id !== taskId),
     associations: project.associations.filter((association) => association.taskId !== taskId),
+    taskDependencies: project.taskDependencies.filter(
+      (dependency) =>
+        dependency.dependentTaskId !== taskId && dependency.prerequisiteTaskId !== taskId,
+    ),
   }
 }
 

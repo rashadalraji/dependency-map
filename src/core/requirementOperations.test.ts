@@ -12,6 +12,7 @@ function fixtureProject(): Project {
     ],
     tasks: [{ id: 'task-1', title: 'Existing task', estimatedEffortDays: 2, status: 'NotStarted' }],
     associations: [{ requirementId: 'req-1', taskId: 'task-1' }],
+    taskDependencies: [],
     nextRequirementSeq: 2,
     nextTaskSeq: 2,
   }

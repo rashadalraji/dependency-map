@@ -22,6 +22,7 @@ function fixtureProject(): Project {
       { requirementId: 'req-1', taskId: 'task-1' },
       { requirementId: 'req-2', taskId: 'task-1' },
     ],
+    taskDependencies: [],
     nextRequirementSeq: 3,
     nextTaskSeq: 2,
   }
@@ -65,6 +66,25 @@ describe('removeTask', () => {
     const project = removeTask(fixtureProject(), 'task-1')
     expect(project.tasks).toEqual([])
     expect(project.associations).toEqual([])
+  })
+
+  it('deletes every task dependency referencing the removed task, as either side', () => {
+    const project: Project = {
+      ...fixtureProject(),
+      tasks: [
+        ...fixtureProject().tasks,
+        { id: 'task-2', title: 'Upstream task', estimatedEffortDays: 1, status: 'NotStarted' },
+        { id: 'task-3', title: 'Downstream task', estimatedEffortDays: 1, status: 'NotStarted' },
+      ],
+      // task-1 depends on task-2 (task-1 is dependent); task-3 depends on task-1 (task-1 is prerequisite)
+      taskDependencies: [
+        { dependentTaskId: 'task-1', prerequisiteTaskId: 'task-2' },
+        { dependentTaskId: 'task-3', prerequisiteTaskId: 'task-1' },
+      ],
+    }
+
+    const result = removeTask(project, 'task-1')
+    expect(result.taskDependencies).toEqual([])
   })
 })
 

@@ -1,4 +1,4 @@
-import type { Association, Project, Requirement, Task } from './types'
+import type { Association, Project, Requirement, Task, TaskDependency } from './types'
 
 function requirement(
   id: string,
@@ -20,6 +20,10 @@ function task(
 
 function link(requirementId: string, taskId: string): Association {
   return { requirementId, taskId }
+}
+
+function dependsOn(dependentTaskId: string, prerequisiteTaskId: string): TaskDependency {
+  return { dependentTaskId, prerequisiteTaskId }
 }
 
 /**
@@ -90,6 +94,31 @@ export function createSeedProject(): Project {
     // task-20 is intentionally unassociated (orphan task edge case)
   ]
 
+  const taskDependencies: TaskDependency[] = [
+    // Multi-currency invoicing chain, 4 tasks deep: task-10 -> task-3 -> task-2 -> task-1
+    dependsOn('task-2', 'task-1'),
+    dependsOn('task-3', 'task-2'),
+    dependsOn('task-10', 'task-3'),
+    // task-10 also depends on the usage-metering work (cross-requirement dependency)
+    dependsOn('task-10', 'task-9'),
+    dependsOn('task-9', 'task-8'),
+    // Self-serve plan changes: confirmation emails wait on both upgrade and downgrade logic
+    dependsOn('task-5', 'task-4'),
+    dependsOn('task-6', 'task-4'),
+    dependsOn('task-7', 'task-5'),
+    dependsOn('task-7', 'task-6'),
+    // Legacy invoice migration QA waits on the conversion itself
+    dependsOn('task-12', 'task-11'),
+    // Dunning/retry: email sequence and config UI both wait on the retry scheduler
+    dependsOn('task-14', 'task-13'),
+    dependsOn('task-15', 'task-13'),
+    // Audit log viewer waits on the API endpoint it reads from
+    dependsOn('task-17', 'task-16'),
+    // Flat-rate sunset: migrate customers only after they've been notified
+    dependsOn('task-19', 'task-18'),
+    // task-20 is intentionally left with no dependencies or dependents (unconnected node edge case)
+  ]
+
   return {
     name: 'Atlas Billing Platform Revamp',
     targetDeadline: '2026-12-15',
@@ -97,6 +126,7 @@ export function createSeedProject(): Project {
     requirements,
     tasks,
     associations,
+    taskDependencies,
     nextRequirementSeq: requirements.length + 1,
     nextTaskSeq: tasks.length + 1,
   }

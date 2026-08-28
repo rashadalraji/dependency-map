@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest'
+import { wouldCreateCycle } from './dependencyGraph'
 import { createSeedProject } from './seedData'
 
 describe('createSeedProject', () => {
@@ -26,5 +27,31 @@ describe('createSeedProject', () => {
     const project = createSeedProject()
     expect(project.nextRequirementSeq).toBe(project.requirements.length + 1)
     expect(project.nextTaskSeq).toBe(project.tasks.length + 1)
+  })
+
+  it('includes a task dependency chain at least 3 tasks deep', () => {
+    const project = createSeedProject()
+    expect(project.taskDependencies.length).toBeGreaterThan(0)
+    expect(project.taskDependencies).toContainEqual({
+      dependentTaskId: 'task-3',
+      prerequisiteTaskId: 'task-2',
+    })
+    expect(project.taskDependencies).toContainEqual({
+      dependentTaskId: 'task-2',
+      prerequisiteTaskId: 'task-1',
+    })
+  })
+
+  it('contains no cycle in its seeded task dependencies', () => {
+    const project = createSeedProject()
+    for (const edge of project.taskDependencies) {
+      const withoutEdge = {
+        ...project,
+        taskDependencies: project.taskDependencies.filter((other) => other !== edge),
+      }
+      expect(wouldCreateCycle(withoutEdge, edge.dependentTaskId, edge.prerequisiteTaskId)).toBe(
+        false,
+      )
+    }
   })
 })

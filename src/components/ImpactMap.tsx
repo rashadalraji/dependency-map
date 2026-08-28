@@ -23,12 +23,18 @@ export function ImpactMap({ project, result }: ImpactMapProps) {
     () => buildImpactGraphElements(project, result),
     [project, result],
   )
+  const hasNoImpact = result === null || result.affectedTasks.length === 0
 
   return (
     <div className="flex h-[55vh] min-h-96 flex-col overflow-hidden rounded-md border border-slate-200 dark:border-slate-700">
       <div className="border-b border-slate-200 bg-slate-50 px-4 py-2 dark:border-slate-700 dark:bg-slate-800/60">
         <GraphLegend entries={LEGEND_ENTRIES} />
       </div>
+      {hasNoImpact && (
+        <p className="border-b border-slate-200 bg-emerald-50 px-4 py-2 text-sm text-emerald-800 dark:border-slate-700 dark:bg-emerald-900/20 dark:text-emerald-300">
+          No tasks are affected by this change.
+        </p>
+      )}
       <div data-testid="impact-map-graph" className="min-h-0 flex-1">
         <ReactFlowProvider>
           <ReactFlow nodes={nodes} edges={edges} nodeTypes={NODE_TYPES} nodesDraggable={false} fitView>

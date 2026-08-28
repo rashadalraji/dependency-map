@@ -30,6 +30,16 @@ export const RELATION_INFO: Record<TaskNodeRelation, { label: string; swatchClas
   unaffected: { label: 'Unaffected', swatchClassName: 'bg-slate-400' },
 }
 
+/** Edge colors for the Impact Map's affected chain (005-impact-visualization-clarity,
+ * research.md #2) — a chain edge is colored by the category of the task the impact is flowing
+ * *into* (its dependent/target end), reusing the same hues as `RELATION_INFO`'s node swatches so
+ * an edge and the node it leads to always agree. */
+const CHAIN_EDGE_COLOR: Record<'direct' | 'indirect', string> = {
+  direct: '#e11d48', // rose-600
+  indirect: '#f97316', // orange-500
+}
+const MUTED_EDGE_COLOR = '#cbd5e1' // slate-300
+
 const NODE_WIDTH = 200
 const NODE_HEIGHT = 56
 
@@ -125,7 +135,10 @@ export function buildDependencyGraphElements(
   return { nodes: nodesFromLayout(project, layout, relationFor), edges: layout.edges }
 }
 
-/** Nodes/edges for the Impact Map (003): highlights a change's direct/indirect affected tasks. */
+/**
+ * Nodes/edges for the Impact Map (003, refined in 005): highlights a change's direct/indirect
+ * affected tasks, and the specific dependency connections between them, as one connected chain.
+ */
 export function buildImpactGraphElements(
   project: Project,
   impactResult: ImpactResult | null,
@@ -140,5 +153,24 @@ export function buildImpactGraphElements(
     return relationById.get(taskId) ?? 'unaffected'
   }
 
-  return { nodes: nodesFromLayout(project, layout, relationFor), edges: layout.edges }
+  // An edge is part of the affected chain only when BOTH ends are affected (research.md #1) —
+  // not merely because its target happens to be affected, since an unaffected task's own
+  // prerequisites are not themselves part of "why" anything is impacted.
+  const edges: Edge[] = layout.edges.map((edge) => {
+    const sourceRelation = relationById.get(edge.source as string)
+    const targetRelation = relationById.get(edge.target as string)
+    const isInChain =
+      sourceRelation !== undefined &&
+      (targetRelation === 'direct' || targetRelation === 'indirect')
+
+    const color = isInChain ? CHAIN_EDGE_COLOR[targetRelation as 'direct' | 'indirect'] : MUTED_EDGE_COLOR
+
+    return {
+      ...edge,
+      style: { stroke: color, strokeWidth: isInChain ? 2.5 : 1, opacity: isInChain ? 1 : 0.35 },
+      markerEnd: { type: MarkerType.ArrowClosed, color },
+    }
+  })
+
+  return { nodes: nodesFromLayout(project, layout, relationFor), edges }
 }

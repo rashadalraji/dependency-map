@@ -2,6 +2,7 @@ import { render, screen } from '@testing-library/react'
 import { describe, expect, it } from 'vitest'
 import { analyzeRequirementChange } from '../core/impactAnalysis'
 import type { Project } from '../core/types'
+import { RELATION_INFO } from './graphLayout'
 import { ImpactReport } from './ImpactReport'
 
 function fixtureProject(): Project {
@@ -94,5 +95,27 @@ describe('ImpactReport - explanations (US2)', () => {
     const taskCItem = screen.getByText('Task C').closest('li')!
     expect(taskCItem).toHaveTextContent('Task B')
     expect(taskCItem).not.toHaveTextContent('Task A')
+  })
+})
+
+describe('ImpactReport - Report/Map color consistency (005, US2)', () => {
+  it("labels a directly affected task using RELATION_INFO's shared definition, not a local duplicate", () => {
+    const project = fixtureProject()
+    const change = project.requirementChanges[0]
+    const result = analyzeRequirementChange(project, change.id)
+    render(<ImpactReport project={project} change={change} result={result} />)
+
+    const taskAItem = screen.getByText('Task A').closest('li')!
+    expect(taskAItem).toHaveTextContent(RELATION_INFO.direct.label)
+  })
+
+  it("labels an indirectly affected task using RELATION_INFO's shared definition, not a local duplicate", () => {
+    const project = fixtureProject()
+    const change = project.requirementChanges[0]
+    const result = analyzeRequirementChange(project, change.id)
+    render(<ImpactReport project={project} change={change} result={result} />)
+
+    const taskBItem = screen.getByText('Task B').closest('li')!
+    expect(taskBItem).toHaveTextContent(RELATION_INFO.indirect.label)
   })
 })

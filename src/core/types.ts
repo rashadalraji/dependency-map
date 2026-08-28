@@ -30,6 +30,32 @@ export interface TaskDependency {
   prerequisiteTaskId: string
 }
 
+export type RequirementChangeType = 'Added' | 'Modified' | 'Removed'
+
+export interface RequirementChange {
+  id: string
+  requirementId: string
+  changeType: RequirementChangeType
+  requirementDescriptionSnapshot: string
+  directlyAssociatedTaskIds: string[]
+}
+
+export type ImpactRiskLevel = 'Low' | 'Medium' | 'High' | 'Critical'
+
+export interface AffectedTask {
+  taskId: string
+  relation: 'direct' | 'indirect'
+  reason: string
+}
+
+export interface ImpactResult {
+  changeId: string
+  affectedTasks: AffectedTask[]
+  effortImpactDays: number
+  scheduleImpactDays: number
+  riskLevel: ImpactRiskLevel
+}
+
 export interface Project {
   name: string
   targetDeadline: string
@@ -38,6 +64,8 @@ export interface Project {
   tasks: Task[]
   associations: Association[]
   taskDependencies: TaskDependency[]
+  requirementChanges: RequirementChange[]
   nextRequirementSeq: number
   nextTaskSeq: number
+  nextChangeSeq: number
 }

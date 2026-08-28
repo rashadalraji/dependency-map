@@ -27,6 +27,24 @@ describe('createSeedProject', () => {
     const project = createSeedProject()
     expect(project.nextRequirementSeq).toBe(project.requirements.length + 1)
     expect(project.nextTaskSeq).toBe(project.tasks.length + 1)
+    expect(project.nextChangeSeq).toBe(project.requirementChanges.length + 1)
+  })
+
+  it('includes at least one requirement change of each type', () => {
+    const project = createSeedProject()
+    const types = new Set(project.requirementChanges.map((change) => change.changeType))
+    expect(types.has('Added')).toBe(true)
+    expect(types.has('Modified')).toBe(true)
+    expect(types.has('Removed')).toBe(true)
+  })
+
+  it('includes a "Removed" change whose requirement no longer appears in the live list', () => {
+    const project = createSeedProject()
+    const removed = project.requirementChanges.find((change) => change.changeType === 'Removed')
+    expect(removed).toBeDefined()
+    expect(
+      project.requirements.some((requirement) => requirement.id === removed!.requirementId),
+    ).toBe(false)
   })
 
   it('includes a task dependency chain at least 3 tasks deep', () => {

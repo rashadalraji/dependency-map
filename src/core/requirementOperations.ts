@@ -1,4 +1,5 @@
 import { nextRequirementId } from './ids'
+import { recordRequirementChange } from './requirementChangeLog'
 import type { Project, Requirement, RequirementPriority, RequirementStatus } from './types'
 
 export interface AddRequirementInput {
@@ -19,11 +20,13 @@ export function addRequirement(project: Project, input: AddRequirementInput): Pr
     status: 'Proposed',
   }
 
-  return {
+  const updated: Project = {
     ...project,
     requirements: [...project.requirements, requirement],
     nextRequirementSeq: project.nextRequirementSeq + 1,
   }
+
+  return recordRequirementChange(updated, requirement.id, 'Added', requirement.description)
 }
 
 export interface EditRequirementChanges {
@@ -37,7 +40,9 @@ export function editRequirement(
   requirementId: string,
   changes: EditRequirementChanges,
 ): Project {
-  return {
+  let updatedDescription: string | undefined
+
+  const updated: Project = {
     ...project,
     requirements: project.requirements.map((requirement) => {
       if (requirement.id !== requirementId) {
@@ -49,6 +54,7 @@ export function editRequirement(
       if (description === '') {
         throw new Error('Requirement description must not be empty')
       }
+      updatedDescription = description
 
       return {
         ...requirement,
@@ -58,13 +64,34 @@ export function editRequirement(
       }
     }),
   }
+
+  if (updatedDescription === undefined) {
+    return updated
+  }
+
+  return recordRequirementChange(updated, requirementId, 'Modified', updatedDescription)
 }
 
 export function removeRequirement(project: Project, requirementId: string): Project {
+  const requirement = project.requirements.find((candidate) => candidate.id === requirementId)
+  if (requirement === undefined) {
+    return project
+  }
+
+  // Snapshot associations from the pre-removal state, before they are deleted below.
+  const withChangeRecorded = recordRequirementChange(
+    project,
+    requirementId,
+    'Removed',
+    requirement.description,
+  )
+
   return {
-    ...project,
-    requirements: project.requirements.filter((requirement) => requirement.id !== requirementId),
-    associations: project.associations.filter(
+    ...withChangeRecorded,
+    requirements: withChangeRecorded.requirements.filter(
+      (candidate) => candidate.id !== requirementId,
+    ),
+    associations: withChangeRecorded.associations.filter(
       (association) => association.requirementId !== requirementId,
     ),
   }

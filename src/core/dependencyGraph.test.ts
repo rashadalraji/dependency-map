@@ -20,8 +20,10 @@ function fixtureProject(): Project {
       { dependentTaskId: 'task-a', prerequisiteTaskId: 'task-b' },
       { dependentTaskId: 'task-b', prerequisiteTaskId: 'task-c' },
     ],
+    requirementChanges: [],
     nextRequirementSeq: 1,
     nextTaskSeq: 5,
+    nextChangeSeq: 1,
   }
 }
 

@@ -16,8 +16,10 @@ function projectWithTasks(statuses: Project['tasks'][number]['status'][]): Proje
     })),
     associations: [],
     taskDependencies: [],
+    requirementChanges: [],
     nextRequirementSeq: 1,
     nextTaskSeq: statuses.length + 1,
+    nextChangeSeq: 1,
   }
 }
 

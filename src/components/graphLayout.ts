@@ -1,8 +1,15 @@
 import dagre from '@dagrejs/dagre'
 import { MarkerType, Position, type Edge, type Node } from '@xyflow/react'
-import type { Project, TaskStatus } from '../core/types'
+import type { ImpactResult, Project, TaskStatus } from '../core/types'
 
-export type TaskNodeRelation = 'selected' | 'dependency' | 'dependent' | 'unrelated'
+export type TaskNodeRelation =
+  | 'selected'
+  | 'dependency'
+  | 'dependent'
+  | 'unrelated'
+  | 'direct'
+  | 'indirect'
+  | 'unaffected'
 
 export interface TaskNodeData extends Record<string, unknown> {
   label: string
@@ -13,16 +20,18 @@ export interface TaskNodeData extends Record<string, unknown> {
 const NODE_WIDTH = 200
 const NODE_HEIGHT = 56
 
+interface TaskGraphLayout {
+  positions: Map<string, { x: number; y: number }>
+  edges: Edge[]
+}
+
 /**
- * Converts the task-dependency graph into React Flow nodes/edges with deterministic,
- * dagre-computed positions. An edge runs from its prerequisite task to its dependent task
- * (the direction work "flows" — prerequisite must complete before the dependent can proceed),
- * matching the convention used in typical project-dependency diagrams.
+ * The dagre-computed positions and dependency edges shared by every graph view over the task
+ * dependency graph (research.md #4, 003-requirement-impact-analysis) — deterministic for a given
+ * project, and independent of what each view highlights. An edge runs from its prerequisite task
+ * to its dependent task (the direction work "flows"), matching typical dependency diagrams.
  */
-export function buildDependencyGraphElements(
-  project: Project,
-  selectedTaskId: string | null,
-): { nodes: Node<TaskNodeData>[]; edges: Edge[] } {
+function computeTaskGraphLayout(project: Project): TaskGraphLayout {
   const graph = new dagre.graphlib.Graph()
   graph.setGraph({ rankdir: 'LR', nodesep: 32, ranksep: 96 })
   graph.setDefaultEdgeLabel(() => ({}))
@@ -35,6 +44,48 @@ export function buildDependencyGraphElements(
   }
 
   dagre.layout(graph)
+
+  const positions = new Map(
+    project.tasks.map((task) => {
+      const position = graph.node(task.id)
+      return [task.id, { x: position.x - NODE_WIDTH / 2, y: position.y - NODE_HEIGHT / 2 }] as const
+    }),
+  )
+
+  const edges: Edge[] = project.taskDependencies.map((dependency) => ({
+    id: `${dependency.prerequisiteTaskId}->${dependency.dependentTaskId}`,
+    source: dependency.prerequisiteTaskId,
+    target: dependency.dependentTaskId,
+    markerEnd: { type: MarkerType.ArrowClosed },
+  }))
+
+  return { positions, edges }
+}
+
+function nodesFromLayout(
+  project: Project,
+  layout: TaskGraphLayout,
+  relationFor: (taskId: string) => TaskNodeRelation,
+): Node<TaskNodeData>[] {
+  return project.tasks.map((task) => {
+    const position = layout.positions.get(task.id)!
+    return {
+      id: task.id,
+      type: 'task',
+      position,
+      sourcePosition: Position.Right,
+      targetPosition: Position.Left,
+      data: { label: task.title, status: task.status, relation: relationFor(task.id) },
+    }
+  })
+}
+
+/** Nodes/edges for the Dependency Map (002): highlights the selected task's direct relations. */
+export function buildDependencyGraphElements(
+  project: Project,
+  selectedTaskId: string | null,
+): { nodes: Node<TaskNodeData>[]; edges: Edge[] } {
+  const layout = computeTaskGraphLayout(project)
 
   const dependencyIds = new Set(
     selectedTaskId === null
@@ -58,24 +109,23 @@ export function buildDependencyGraphElements(
     return 'unrelated'
   }
 
-  const nodes: Node<TaskNodeData>[] = project.tasks.map((task) => {
-    const position = graph.node(task.id)
-    return {
-      id: task.id,
-      type: 'task',
-      position: { x: position.x - NODE_WIDTH / 2, y: position.y - NODE_HEIGHT / 2 },
-      sourcePosition: Position.Right,
-      targetPosition: Position.Left,
-      data: { label: task.title, status: task.status, relation: relationFor(task.id) },
-    }
-  })
+  return { nodes: nodesFromLayout(project, layout, relationFor), edges: layout.edges }
+}
 
-  const edges: Edge[] = project.taskDependencies.map((dependency) => ({
-    id: `${dependency.prerequisiteTaskId}->${dependency.dependentTaskId}`,
-    source: dependency.prerequisiteTaskId,
-    target: dependency.dependentTaskId,
-    markerEnd: { type: MarkerType.ArrowClosed },
-  }))
+/** Nodes/edges for the Impact Map (003): highlights a change's direct/indirect affected tasks. */
+export function buildImpactGraphElements(
+  project: Project,
+  impactResult: ImpactResult | null,
+): { nodes: Node<TaskNodeData>[]; edges: Edge[] } {
+  const layout = computeTaskGraphLayout(project)
 
-  return { nodes, edges }
+  const relationById = new Map(
+    (impactResult?.affectedTasks ?? []).map((affected) => [affected.taskId, affected.relation]),
+  )
+
+  function relationFor(taskId: string): TaskNodeRelation {
+    return relationById.get(taskId) ?? 'unaffected'
+  }
+
+  return { nodes: nodesFromLayout(project, layout, relationFor), edges: layout.edges }
 }

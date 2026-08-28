@@ -19,8 +19,10 @@ function fixtureProject(): Project {
     associations: [],
     // Task B depends on Task A
     taskDependencies: [{ dependentTaskId: 'task-b', prerequisiteTaskId: 'task-a' }],
+    requirementChanges: [],
     nextRequirementSeq: 1,
     nextTaskSeq: 4,
+    nextChangeSeq: 1,
   }
 }
 

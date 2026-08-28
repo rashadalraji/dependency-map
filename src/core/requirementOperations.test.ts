@@ -13,8 +13,10 @@ function fixtureProject(): Project {
     tasks: [{ id: 'task-1', title: 'Existing task', estimatedEffortDays: 2, status: 'NotStarted' }],
     associations: [{ requirementId: 'req-1', taskId: 'task-1' }],
     taskDependencies: [],
+    requirementChanges: [],
     nextRequirementSeq: 2,
     nextTaskSeq: 2,
+    nextChangeSeq: 1,
   }
 }
 
@@ -36,6 +38,17 @@ describe('addRequirement', () => {
   it('rejects an empty or whitespace-only description', () => {
     expect(() => addRequirement(fixtureProject(), { description: '   ', priority: 'Low' })).toThrow()
   })
+
+  it('appends an "Added" change with an empty associated-task snapshot', () => {
+    const project = addRequirement(fixtureProject(), { description: 'New requirement', priority: 'High' })
+    expect(project.requirementChanges).toContainEqual({
+      id: 'change-1',
+      requirementId: 'req-2',
+      changeType: 'Added',
+      requirementDescriptionSnapshot: 'New requirement',
+      directlyAssociatedTaskIds: [],
+    })
+  })
 })
 
 describe('editRequirement', () => {
@@ -46,6 +59,17 @@ describe('editRequirement', () => {
       description: 'Existing requirement',
       priority: 'Medium',
       status: 'Approved',
+    })
+  })
+
+  it('appends a "Modified" change whose snapshot matches the requirement\'s current associations', () => {
+    const project = editRequirement(fixtureProject(), 'req-1', { status: 'Approved' })
+    expect(project.requirementChanges).toContainEqual({
+      id: 'change-1',
+      requirementId: 'req-1',
+      changeType: 'Modified',
+      requirementDescriptionSnapshot: 'Existing requirement',
+      directlyAssociatedTaskIds: ['task-1'],
     })
   })
 })
@@ -60,10 +84,22 @@ describe('removeRequirement', () => {
     ])
   })
 
+  it('appends a "Removed" change snapshotting the associations that existed just before removal', () => {
+    const project = removeRequirement(fixtureProject(), 'req-1')
+    expect(project.requirementChanges).toContainEqual({
+      id: 'change-1',
+      requirementId: 'req-1',
+      changeType: 'Removed',
+      requirementDescriptionSnapshot: 'Existing requirement',
+      directlyAssociatedTaskIds: ['task-1'],
+    })
+  })
+
   it('is a no-op when the id does not exist', () => {
     const original = fixtureProject()
     const project = removeRequirement(original, 'req-missing')
     expect(project.requirements).toEqual(original.requirements)
     expect(project.associations).toEqual(original.associations)
+    expect(project.requirementChanges).toEqual(original.requirementChanges)
   })
 })

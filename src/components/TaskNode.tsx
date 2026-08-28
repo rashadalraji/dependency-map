@@ -1,5 +1,6 @@
 import { Handle, Position, type Node, type NodeProps } from '@xyflow/react'
 import type { TaskNodeData } from './graphLayout'
+import './TaskNode.css'
 
 const STATUS_LABEL: Record<TaskNodeData['status'], string> = {
   NotStarted: 'Not started',

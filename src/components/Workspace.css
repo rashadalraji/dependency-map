@@ -16,6 +16,82 @@
   border-color: var(--accent-border, rgba(170, 59, 255, 0.5));
 }
 
+.workspace__impact-column {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.impact-report__summary {
+  display: flex;
+  gap: 24px;
+  flex-wrap: wrap;
+  margin: 12px 0 20px;
+}
+
+.impact-report__summary dt {
+  font-size: 13px;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  opacity: 0.7;
+}
+
+.impact-report__summary dd {
+  margin: 4px 0 0;
+  font-size: 16px;
+}
+
+.impact-report__risk {
+  font-weight: 700;
+}
+
+.impact-report__risk--low {
+  color: #2ecc71;
+}
+
+.impact-report__risk--medium {
+  color: #f5a623;
+}
+
+.impact-report__risk--high {
+  color: #e67e22;
+}
+
+.impact-report__risk--critical {
+  color: #c0392b;
+}
+
+.impact-report__tasks {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.impact-report__task {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 8px 12px;
+  border-radius: 6px;
+  border: 1px solid var(--border, #e5e4e7);
+}
+
+.impact-report__task--direct {
+  border-left: 4px solid #c0392b;
+}
+
+.impact-report__task--indirect {
+  border-left: 4px solid #e67e22;
+}
+
+.impact-report__task-reason {
+  font-size: 13px;
+  opacity: 0.8;
+}
+
 .project-header__facts {
   display: flex;
   gap: 32px;

@@ -1,0 +1,7 @@
+.impact-map {
+  height: 55vh;
+  min-height: 380px;
+  border: 1px solid var(--border, #e5e4e7);
+  border-radius: 8px;
+  overflow: hidden;
+}

@@ -1,4 +1,12 @@
-import type { Association, Project, Requirement, Task, TaskDependency } from './types'
+import type {
+  Association,
+  Project,
+  Requirement,
+  RequirementChange,
+  RequirementChangeType,
+  Task,
+  TaskDependency,
+} from './types'
 
 function requirement(
   id: string,
@@ -24,6 +32,16 @@ function link(requirementId: string, taskId: string): Association {
 
 function dependsOn(dependentTaskId: string, prerequisiteTaskId: string): TaskDependency {
   return { dependentTaskId, prerequisiteTaskId }
+}
+
+function change(
+  id: string,
+  requirementId: string,
+  changeType: RequirementChangeType,
+  requirementDescriptionSnapshot: string,
+  directlyAssociatedTaskIds: string[],
+): RequirementChange {
+  return { id, requirementId, changeType, requirementDescriptionSnapshot, directlyAssociatedTaskIds }
 }
 
 /**
@@ -119,6 +137,35 @@ export function createSeedProject(): Project {
     // task-20 is intentionally left with no dependencies or dependents (unconnected node edge case)
   ]
 
+  const requirementChanges: RequirementChange[] = [
+    // Recorded when req-7 was first added, before task-18/task-19 were later linked to it —
+    // demonstrates a zero-impact change (FR-012).
+    change('change-1', 'req-7', 'Added', 'Sunset the old flat-rate pricing plan', []),
+    // req-4's current associations include task-3, which task-10 depends on but is not itself
+    // associated with req-4 — demonstrates direct AND indirect impact (FR-016).
+    change('change-2', 'req-4', 'Modified', 'Migrate legacy invoices to new PDF template', [
+      'task-11',
+      'task-12',
+      'task-3',
+    ]),
+    // A since-removed requirement, not present in `requirements` above — demonstrates that a
+    // Removed change remains analyzable (spec User Story 3) and also shows direct+indirect
+    // impact via task-17, which depends on task-16 but isn't itself in the snapshot.
+    change(
+      'change-3',
+      'req-8',
+      'Removed',
+      'Support cryptocurrency invoicing (deprecated pilot)',
+      ['task-16'],
+    ),
+    // req-6's current associations, where nothing depends on either task — demonstrates a
+    // direct-only change with no further indirect impact.
+    change('change-4', 'req-6', 'Modified', 'Expose billing audit log to customer admins', [
+      'task-16',
+      'task-17',
+    ]),
+  ]
+
   return {
     name: 'Atlas Billing Platform Revamp',
     targetDeadline: '2026-12-15',
@@ -127,7 +174,9 @@ export function createSeedProject(): Project {
     tasks,
     associations,
     taskDependencies,
+    requirementChanges,
     nextRequirementSeq: requirements.length + 1,
     nextTaskSeq: tasks.length + 1,
+    nextChangeSeq: requirementChanges.length + 1,
   }
 }

@@ -23,8 +23,10 @@ function fixtureProject(): Project {
       { requirementId: 'req-2', taskId: 'task-1' },
     ],
     taskDependencies: [],
+    requirementChanges: [],
     nextRequirementSeq: 3,
     nextTaskSeq: 2,
+    nextChangeSeq: 1,
   }
 }
 

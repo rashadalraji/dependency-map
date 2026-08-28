@@ -7,3 +7,7 @@ export function nextRequirementId(project: Project): string {
 export function nextTaskId(project: Project): string {
   return `task-${project.nextTaskSeq}`
 }
+
+export function nextChangeId(project: Project): string {
+  return `change-${project.nextChangeSeq}`
+}

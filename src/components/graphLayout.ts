@@ -17,6 +17,19 @@ export interface TaskNodeData extends Record<string, unknown> {
   relation: TaskNodeRelation
 }
 
+/** Single source of truth for what each relation means and how it's colored, shared by
+ * `TaskNode` (the graph node itself) and `GraphLegend` (the key explaining it) — see
+ * research.md #2 (004-visual-design-polish) and spec FR-003. */
+export const RELATION_INFO: Record<TaskNodeRelation, { label: string; swatchClassName: string }> = {
+  selected: { label: 'Selected', swatchClassName: 'bg-brand' },
+  dependency: { label: 'Depends on selected', swatchClassName: 'bg-sky-500' },
+  dependent: { label: 'Depends on it', swatchClassName: 'bg-pink-500' },
+  unrelated: { label: 'Unrelated', swatchClassName: 'bg-slate-400' },
+  direct: { label: 'Directly affected', swatchClassName: 'bg-rose-600' },
+  indirect: { label: 'Indirectly affected', swatchClassName: 'bg-orange-500' },
+  unaffected: { label: 'Unaffected', swatchClassName: 'bg-slate-400' },
+}
+
 const NODE_WIDTH = 200
 const NODE_HEIGHT = 56
 

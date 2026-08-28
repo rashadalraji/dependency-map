@@ -1,4 +1,11 @@
-import type { Project, RequirementChange, ImpactResult } from '../core/types'
+import type { Project, RequirementChange, ImpactResult, ImpactRiskLevel } from '../core/types'
+
+const RISK_BADGE_CLASS: Record<ImpactRiskLevel, string> = {
+  Low: 'bg-emerald-100 text-emerald-800 dark:bg-emerald-900/40 dark:text-emerald-300',
+  Medium: 'bg-amber-100 text-amber-800 dark:bg-amber-900/40 dark:text-amber-300',
+  High: 'bg-orange-100 text-orange-800 dark:bg-orange-900/40 dark:text-orange-300',
+  Critical: 'bg-rose-100 text-rose-800 dark:bg-rose-900/40 dark:text-rose-300',
+}
 
 interface ImpactReportProps {
   project: Project
@@ -12,45 +19,66 @@ export function ImpactReport({ project, change, result }: ImpactReportProps) {
   const indirectTasks = result.affectedTasks.filter((affected) => affected.relation === 'indirect')
 
   return (
-    <section className="panel" aria-label="Impact report">
-      <h2>Impact Report</h2>
-      <p>
-        <strong>{change.requirementDescriptionSnapshot}</strong> — {change.changeType}
+    <section aria-label="Impact report" className="rounded-md border border-slate-200 p-4 dark:border-slate-700">
+      <h2 className="text-lg font-semibold">Impact Report</h2>
+      <p className="mt-1 text-sm text-slate-600 dark:text-slate-300">
+        <strong className="text-slate-900 dark:text-slate-100">{change.requirementDescriptionSnapshot}</strong> —{' '}
+        {change.changeType}
       </p>
-      <dl className="impact-report__summary">
+
+      <dl className="mt-4 flex flex-wrap gap-x-6 gap-y-3">
         <div>
-          <dt>Directly affected tasks</dt>
-          <dd>{directTasks.length}</dd>
+          <dt className="text-xs font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">
+            Directly affected tasks
+          </dt>
+          <dd className="mt-0.5 text-base">{directTasks.length}</dd>
         </div>
         <div>
-          <dt>Indirectly affected tasks</dt>
-          <dd>{indirectTasks.length}</dd>
+          <dt className="text-xs font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">
+            Indirectly affected tasks
+          </dt>
+          <dd className="mt-0.5 text-base">{indirectTasks.length}</dd>
         </div>
         <div>
-          <dt>Effort impact</dt>
-          <dd>{result.effortImpactDays} days</dd>
+          <dt className="text-xs font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">
+            Effort impact
+          </dt>
+          <dd className="mt-0.5 text-base">{result.effortImpactDays} days</dd>
         </div>
         <div>
-          <dt>Schedule impact</dt>
-          <dd>{result.scheduleImpactDays} days</dd>
+          <dt className="text-xs font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">
+            Schedule impact
+          </dt>
+          <dd className="mt-0.5 text-base">{result.scheduleImpactDays} days</dd>
         </div>
         <div>
-          <dt>Risk level</dt>
-          <dd className={`impact-report__risk impact-report__risk--${result.riskLevel.toLowerCase()}`}>
+          <dt className="text-xs font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">
+            Risk level
+          </dt>
+          <dd className={`mt-0.5 inline-block rounded px-2 py-0.5 text-sm font-semibold ${RISK_BADGE_CLASS[result.riskLevel]}`}>
             {result.riskLevel}
           </dd>
         </div>
       </dl>
 
       {result.affectedTasks.length === 0 ? (
-        <p>No tasks are affected by this change.</p>
+        <p className="mt-4 text-sm text-slate-500 dark:text-slate-400">No tasks are affected by this change.</p>
       ) : (
-        <ul className="impact-report__tasks">
+        <ul className="mt-4 flex flex-col gap-2">
           {result.affectedTasks.map((affected) => (
-            <li key={affected.taskId} className={`impact-report__task impact-report__task--${affected.relation}`}>
-              <strong>{taskById.get(affected.taskId)?.title ?? affected.taskId}</strong>
-              <span className="badge">{affected.relation}</span>
-              <p className="impact-report__task-reason">{affected.reason}</p>
+            <li
+              key={affected.taskId}
+              className={`rounded border-l-4 border border-slate-200 p-2 dark:border-slate-700 ${
+                affected.relation === 'direct' ? 'border-l-rose-600' : 'border-l-orange-500'
+              }`}
+            >
+              <div className="flex items-center gap-2">
+                <strong className="text-sm">{taskById.get(affected.taskId)?.title ?? affected.taskId}</strong>
+                <span className="rounded bg-slate-100 px-1.5 py-0.5 text-xs font-medium text-slate-600 dark:bg-slate-800 dark:text-slate-300">
+                  {affected.relation}
+                </span>
+              </div>
+              <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">{affected.reason}</p>
             </li>
           ))}
         </ul>

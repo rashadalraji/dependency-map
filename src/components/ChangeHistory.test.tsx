@@ -1,6 +1,24 @@
 import { fireEvent, render, screen, within } from '@testing-library/react'
-import { describe, expect, it } from 'vitest'
+import { describe, expect, it, vi } from 'vitest'
+import type { Project } from '../core/types'
+import { ChangeHistory } from './ChangeHistory'
 import { Workspace } from './Workspace'
+
+function emptyProject(): Project {
+  return {
+    name: 'Test Project',
+    targetDeadline: '2026-01-01',
+    estimatedEffortDays: 10,
+    requirements: [],
+    tasks: [],
+    associations: [],
+    taskDependencies: [],
+    requirementChanges: [],
+    nextRequirementSeq: 1,
+    nextTaskSeq: 1,
+    nextChangeSeq: 1,
+  }
+}
 
 function switchToView(name: string) {
   fireEvent.click(screen.getByRole('button', { name }))
@@ -58,5 +76,10 @@ describe('ChangeHistory (US3)', () => {
     const analyzeButton = within(historyRow).getByRole('button', { name: 'Analyze' })
     fireEvent.click(analyzeButton)
     expect(analyzeButton).toHaveAttribute('aria-pressed', 'true')
+  })
+
+  it('shows an empty-state message when no changes have been recorded', () => {
+    render(<ChangeHistory project={emptyProject()} selectedChangeId={null} onSelectChange={vi.fn()} />)
+    expect(screen.getByText('No requirement changes recorded yet.')).toBeInTheDocument()
   })
 })

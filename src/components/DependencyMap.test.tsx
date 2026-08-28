@@ -55,16 +55,15 @@ function Harness({ initialProject }: { initialProject: Project }) {
 }
 
 /** Task titles also appear as <option> text in the create-dependency form, so node clicks and
- * assertions about the graph must be scoped to the graph pane specifically. */
-function getGraph(container: HTMLElement): HTMLElement {
-  const graph = container.querySelector('.dependency-map__graph')
-  if (!graph) throw new Error('Dependency map graph pane not found')
-  return graph as HTMLElement
+ * assertions about the graph must be scoped to the graph pane specifically, via its data-testid
+ * (decoupled from styling classes — research.md #4, 004-visual-design-polish). */
+function getGraph(): HTMLElement {
+  return screen.getByTestId('dependency-map-graph')
 }
 
 describe('DependencyMap - viewing (US1)', () => {
   it('renders every task as a node, including an unconnected one', () => {
-    const { container } = render(
+    render(
       <DependencyMap
         project={fixtureProject()}
         error={null}
@@ -72,7 +71,7 @@ describe('DependencyMap - viewing (US1)', () => {
         onRemoveDependency={vi.fn()}
       />,
     )
-    const graph = within(getGraph(container))
+    const graph = within(getGraph())
 
     expect(graph.getByText('Task A')).toBeInTheDocument()
     expect(graph.getByText('Task B')).toBeInTheDocument()
@@ -80,7 +79,7 @@ describe('DependencyMap - viewing (US1)', () => {
   })
 
   it('shows the correct direct dependencies and dependents when a task is selected', () => {
-    const { container } = render(
+    render(
       <DependencyMap
         project={fixtureProject()}
         error={null}
@@ -89,7 +88,7 @@ describe('DependencyMap - viewing (US1)', () => {
       />,
     )
 
-    fireEvent.click(within(getGraph(container)).getByText('Task B'))
+    fireEvent.click(within(getGraph()).getByText('Task B'))
 
     expect(screen.getByRole('heading', { level: 3, name: 'Task B' })).toBeInTheDocument()
     expect(screen.getByText('Depends on (1)')).toBeInTheDocument()
@@ -137,13 +136,13 @@ describe('DependencyMap - creating a dependency (US2)', () => {
   })
 
   it('creates a valid dependency and updates the detail panel immediately', () => {
-    const { container } = render(<Harness initialProject={fixtureProject()} />)
+    render(<Harness initialProject={fixtureProject()} />)
 
     fireEvent.change(screen.getByLabelText('Dependent task'), { target: { value: 'task-c' } })
     fireEvent.change(screen.getByLabelText('Depends on'), { target: { value: 'task-a' } })
     fireEvent.click(screen.getByRole('button', { name: 'Add dependency' }))
 
-    fireEvent.click(within(getGraph(container)).getByText('Task C (unconnected)'))
+    fireEvent.click(within(getGraph()).getByText('Task C (unconnected)'))
     expect(screen.getByText('Depends on (1)')).toBeInTheDocument()
     expect(
       screen.getByRole('heading', { level: 3, name: 'Task C (unconnected)' }),
@@ -154,9 +153,9 @@ describe('DependencyMap - creating a dependency (US2)', () => {
 
 describe('DependencyMap - removing a dependency (US3)', () => {
   it('removes an existing dependency and updates the panel immediately', () => {
-    const { container } = render(<Harness initialProject={fixtureProject()} />)
+    render(<Harness initialProject={fixtureProject()} />)
 
-    fireEvent.click(within(getGraph(container)).getByText('Task B'))
+    fireEvent.click(within(getGraph()).getByText('Task B'))
     expect(screen.getByText('Depends on (1)')).toBeInTheDocument()
 
     fireEvent.click(screen.getByRole('button', { name: 'Remove' }))

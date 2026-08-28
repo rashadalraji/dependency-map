@@ -3,6 +3,19 @@ import { getRequirementsForTask } from '../core/selectors'
 import type { AddTaskInput, EditTaskChanges } from '../core/taskOperations'
 import { TASK_STATUSES, type Project, type Task, type TaskStatus } from '../core/types'
 
+const STATUS_BADGE_CLASS: Record<TaskStatus, string> = {
+  NotStarted: 'bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-300',
+  InProgress: 'bg-amber-100 text-amber-800 dark:bg-amber-900/40 dark:text-amber-300',
+  Done: 'bg-emerald-100 text-emerald-800 dark:bg-emerald-900/40 dark:text-emerald-300',
+}
+
+const inputClassName =
+  'rounded border border-slate-300 bg-white px-2 py-1 text-sm dark:border-slate-600 dark:bg-slate-800'
+const primaryButtonClassName = 'rounded bg-brand px-3 py-1.5 text-sm font-medium text-white'
+const secondaryButtonClassName =
+  'rounded border border-slate-300 px-2 py-1 text-xs font-medium text-slate-700 hover:bg-slate-50 dark:border-slate-600 dark:text-slate-200 dark:hover:bg-slate-800'
+const linkButtonClassName = 'text-xs text-slate-500 underline hover:text-brand dark:text-slate-400'
+
 interface TaskListProps {
   project: Project
   onAdd: (input: AddTaskInput) => void
@@ -45,19 +58,20 @@ export function TaskList({
   }
 
   return (
-    <section className="panel" aria-label="Tasks">
-      <h2>Tasks ({project.tasks.length})</h2>
+    <section aria-label="Tasks" className="rounded-md border border-slate-200 p-4 dark:border-slate-700">
+      <h2 className="text-lg font-semibold">Tasks ({project.tasks.length})</h2>
 
-      <form className="add-form" onSubmit={handleAdd}>
-        <label>
+      <form onSubmit={handleAdd} className="mt-3 flex flex-wrap items-end gap-3 border-b border-slate-200 pb-4 dark:border-slate-700">
+        <label className="flex flex-col gap-1 text-sm">
           Title
           <input
             value={title}
             onChange={(event) => setTitle(event.target.value)}
             placeholder="What work needs to happen?"
+            className={inputClassName}
           />
         </label>
-        <label>
+        <label className="flex flex-col gap-1 text-sm">
           Estimated effort (days)
           <input
             type="number"
@@ -65,11 +79,16 @@ export function TaskList({
             step="0.5"
             value={estimatedEffortDays}
             onChange={(event) => setEstimatedEffortDays(event.target.value)}
+            className={`${inputClassName} w-24`}
           />
         </label>
-        <label>
+        <label className="flex flex-col gap-1 text-sm">
           Status
-          <select value={status} onChange={(event) => setStatus(event.target.value as TaskStatus)}>
+          <select
+            value={status}
+            onChange={(event) => setStatus(event.target.value as TaskStatus)}
+            className={inputClassName}
+          >
             {TASK_STATUSES.map((option) => (
               <option key={option} value={option}>
                 {option}
@@ -77,29 +96,35 @@ export function TaskList({
             ))}
           </select>
         </label>
-        <button type="submit">Create task</button>
-        {formError && <p className="form-error">{formError}</p>}
+        <button type="submit" className={primaryButtonClassName}>
+          Create task
+        </button>
+        {formError && <p className="w-full text-sm text-rose-600 dark:text-rose-400">{formError}</p>}
       </form>
 
-      <ul className="entity-list">
-        {project.tasks.map((task) => (
-          <TaskRow
-            key={task.id}
-            project={project}
-            task={task}
-            isEditing={editingId === task.id}
-            onStartEdit={() => setEditingId(task.id)}
-            onCancelEdit={() => setEditingId(null)}
-            onSaveEdit={(changes) => {
-              onEdit(task.id, changes)
-              setEditingId(null)
-            }}
-            onRemove={() => onRemove(task.id)}
-            onAssociate={(requirementId) => onAssociate(task.id, requirementId)}
-            onUnassociate={(requirementId) => onUnassociate(task.id, requirementId)}
-          />
-        ))}
-      </ul>
+      {project.tasks.length === 0 ? (
+        <p className="mt-4 text-sm text-slate-500 dark:text-slate-400">No tasks yet.</p>
+      ) : (
+        <ul className="mt-4 flex flex-col gap-2">
+          {project.tasks.map((task) => (
+            <TaskRow
+              key={task.id}
+              project={project}
+              task={task}
+              isEditing={editingId === task.id}
+              onStartEdit={() => setEditingId(task.id)}
+              onCancelEdit={() => setEditingId(null)}
+              onSaveEdit={(changes) => {
+                onEdit(task.id, changes)
+                setEditingId(null)
+              }}
+              onRemove={() => onRemove(task.id)}
+              onAssociate={(requirementId) => onAssociate(task.id, requirementId)}
+              onUnassociate={(requirementId) => onUnassociate(task.id, requirementId)}
+            />
+          ))}
+        </ul>
+      )}
     </section>
   )
 }
@@ -160,49 +185,58 @@ function TaskRow({
 
   if (isEditing) {
     return (
-      <li className="entity-row">
-        <input value={title} onChange={(event) => setTitle(event.target.value)} />
+      <li className="flex flex-wrap items-center gap-2 rounded border border-slate-200 p-2 dark:border-slate-700">
+        <input value={title} onChange={(event) => setTitle(event.target.value)} className={inputClassName} />
         <input
           type="number"
           min="0"
           step="0.5"
           value={estimatedEffortDays}
           onChange={(event) => setEstimatedEffortDays(event.target.value)}
+          className={`${inputClassName} w-24`}
         />
-        <select value={status} onChange={(event) => setStatus(event.target.value as TaskStatus)}>
+        <select
+          value={status}
+          onChange={(event) => setStatus(event.target.value as TaskStatus)}
+          className={inputClassName}
+        >
           {TASK_STATUSES.map((option) => (
             <option key={option} value={option}>
               {option}
             </option>
           ))}
         </select>
-        <button type="button" onClick={handleSave}>
+        <button type="button" onClick={handleSave} className={primaryButtonClassName}>
           Save
         </button>
-        <button type="button" onClick={onCancelEdit}>
+        <button type="button" onClick={onCancelEdit} className={secondaryButtonClassName}>
           Cancel
         </button>
-        {error && <p className="form-error">{error}</p>}
+        {error && <p className="w-full text-sm text-rose-600 dark:text-rose-400">{error}</p>}
       </li>
     )
   }
 
   return (
-    <li className="entity-row">
-      <div className="entity-row__main">
-        <strong>{task.title}</strong>
-        <span className="badge">{task.estimatedEffortDays}d</span>
-        <span className="badge">{task.status}</span>
+    <li className="flex flex-col gap-1 rounded border border-slate-200 p-2 dark:border-slate-700">
+      <div className="flex flex-wrap items-center gap-2">
+        <strong className="text-sm">{task.title}</strong>
+        <span className="rounded bg-slate-100 px-1.5 py-0.5 text-xs font-medium text-slate-600 dark:bg-slate-800 dark:text-slate-300">
+          {task.estimatedEffortDays}d
+        </span>
+        <span className={`rounded px-1.5 py-0.5 text-xs font-medium ${STATUS_BADGE_CLASS[task.status]}`}>
+          {task.status}
+        </span>
       </div>
-      <div className="entity-row__requirements">
+      <div className="text-xs text-slate-500 dark:text-slate-400">
         {linkedRequirements.length === 0 ? (
           'Not linked to any requirement'
         ) : (
-          <ul className="linked-requirements">
+          <ul className="flex flex-col gap-0.5">
             {linkedRequirements.map((requirement) => (
-              <li key={requirement.id}>
-                {requirement.description}{' '}
-                <button type="button" onClick={() => onUnassociate(requirement.id)}>
+              <li key={requirement.id} className="flex items-center gap-2">
+                <span>{requirement.description}</span>
+                <button type="button" onClick={() => onUnassociate(requirement.id)} className={linkButtonClassName}>
                   Unlink
                 </button>
               </li>
@@ -210,8 +244,12 @@ function TaskRow({
           </ul>
         )}
         {linkableRequirements.length > 0 && (
-          <div className="link-form">
-            <select value={linkTarget} onChange={(event) => setLinkTarget(event.target.value)}>
+          <div className="mt-1 flex items-center gap-2">
+            <select
+              value={linkTarget}
+              onChange={(event) => setLinkTarget(event.target.value)}
+              className={inputClassName}
+            >
               <option value="">Link to requirement…</option>
               {linkableRequirements.map((requirement) => (
                 <option key={requirement.id} value={requirement.id}>
@@ -219,17 +257,17 @@ function TaskRow({
                 </option>
               ))}
             </select>
-            <button type="button" onClick={handleLink}>
+            <button type="button" onClick={handleLink} className={secondaryButtonClassName}>
               Link
             </button>
           </div>
         )}
       </div>
-      <div className="entity-row__actions">
-        <button type="button" onClick={onStartEdit}>
+      <div className="flex gap-2">
+        <button type="button" onClick={onStartEdit} className={secondaryButtonClassName}>
           Edit
         </button>
-        <button type="button" onClick={onRemove}>
+        <button type="button" onClick={onRemove} className={secondaryButtonClassName}>
           Remove
         </button>
       </div>

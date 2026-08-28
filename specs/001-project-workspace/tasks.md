@@ -35,12 +35,12 @@ Single frontend project at the repository root (per plan.md Structure Decision):
 **Purpose**: Add the testing toolchain this feature's constitution-mandated tests require;
 nothing story-specific yet.
 
-- [ ] T001 [P] Add `vitest`, `@testing-library/react`, `@testing-library/jest-dom`, and `jsdom` as
+- [X] T001 [P] Add `vitest`, `@testing-library/react`, `@testing-library/jest-dom`, and `jsdom` as
       dev dependencies in `package.json` (per research.md #1)
-- [ ] T002 Add a `test` environment block to `vite.config.ts` (`test: { environment: "jsdom",
+- [X] T002 Add a `test` environment block to `vite.config.ts` (`test: { environment: "jsdom",
       globals: true, setupFiles: ... }`) so Vitest can run component tests against a DOM (per
       research.md #1)
-- [ ] T003 [P] Add a `"test": "vitest run"` script to `package.json`
+- [X] T003 [P] Add a `"test": "vitest run"` script to `package.json`
 
 **Checkpoint**: `npm run test` runs (with zero test files yet) without configuration errors.
 
@@ -53,23 +53,23 @@ the React state adapter that every user story builds on.
 
 **⚠️ CRITICAL**: No user story work can begin until this phase is complete.
 
-- [ ] T004 [P] Define `RequirementPriority`, `RequirementStatus`, `TaskStatus` enums and the
+- [X] T004 [P] Define `RequirementPriority`, `RequirementStatus`, `TaskStatus` enums and the
       `Project`, `Requirement`, `Task`, `Association` types in `src/core/types.ts`, matching
       data-model.md exactly (no React/DOM imports; no `any`)
-- [ ] T005 [P] Implement a deterministic ID sequence generator in `src/core/ids.ts` (e.g.
+- [X] T005 [P] Implement a deterministic ID sequence generator in `src/core/ids.ts` (e.g.
       `nextRequirementId(project)` / `nextTaskId(project)` producing `req-1`, `task-1`, ...) per
       research.md #2 — no `crypto.randomUUID()`, no `Date.now()`
-- [ ] T006 Implement `createSeedProject(): Project` in `src/core/seedData.ts` returning one
+- [X] T006 Implement `createSeedProject(): Project` in `src/core/seedData.ts` returning one
       realistic project (name, `targetDeadline`, `estimatedEffortDays`) with 5-8 requirements,
       15-25 tasks with mixed statuses, and existing associations between them, built using the
       generator from T005 (depends on T004, T005)
-- [ ] T007 [P] Implement `getTasksForRequirement` and `getRequirementsForTask` in
+- [X] T007 [P] Implement `getTasksForRequirement` and `getRequirementsForTask` in
       `src/core/selectors.ts` (depends on T004)
-- [ ] T008 Implement `useProjectStore` in `src/state/useProjectStore.ts`: initializes React state
+- [X] T008 Implement `useProjectStore` in `src/state/useProjectStore.ts`: initializes React state
       from `createSeedProject()` once, and exposes `{ project }` plus a way for later tasks to add
       dispatchers around core operations without re-deriving or duplicating core logic (depends on
       T006)
-- [ ] T009 [P] Unit tests for seed-data determinism and shape in `src/core/seedData.test.ts`:
+- [X] T009 [P] Unit tests for seed-data determinism and shape in `src/core/seedData.test.ts`:
       calling `createSeedProject()` twice yields structurally identical projects; the result has
       5-8 requirements and 15-25 tasks; at least one task exists in each `TaskStatus` (depends on
       T006)
@@ -92,32 +92,32 @@ reflects the seeded mix of task statuses (spec.md User Story 1 acceptance scenar
 
 > Write these tests FIRST; confirm they fail before the corresponding implementation exists.
 
-- [ ] T010 [P] [US1] Unit tests for `computeProgress` in `src/core/progress.test.ts`: mixed
+- [X] T010 [P] [US1] Unit tests for `computeProgress` in `src/core/progress.test.ts`: mixed
       statuses produce a percentage strictly between 0 and 100; all tasks `"Done"` produces 100;
       zero tasks produces the distinct "no tasks yet" shape, not `percentDone: 0` (per data-model
       Integrity Rule 4 and spec edge cases)
-- [ ] T011 [P] [US1] Unit tests for the selectors in `src/core/selectors.test.ts`: a requirement
+- [X] T011 [P] [US1] Unit tests for the selectors in `src/core/selectors.test.ts`: a requirement
       with tasks returns them; a requirement with none returns `[]`, not an error; a task
       associated with multiple requirements is returned by all of them (depends on T007)
 
 ### Implementation for User Story 1
 
-- [ ] T012 [US1] Implement `computeProgress(project): { totalTasks; doneTasks; percentDone } |
+- [X] T012 [US1] Implement `computeProgress(project): { totalTasks; doneTasks; percentDone } |
       { totalTasks: 0 }` in `src/core/progress.ts`, satisfying T010 (depends on T004, T010)
-- [ ] T013 [US1] Build `ProjectHeader` in `src/components/ProjectHeader.tsx` rendering the
+- [X] T013 [US1] Build `ProjectHeader` in `src/components/ProjectHeader.tsx` rendering the
       project's name, target deadline, estimated effort, and the progress figure from
       `computeProgress` (depends on T008, T012)
-- [ ] T014 [US1] [P] Build a read-only `RequirementList` in `src/components/RequirementList.tsx`
+- [X] T014 [US1] [P] Build a read-only `RequirementList` in `src/components/RequirementList.tsx`
       listing every requirement's description/priority/status plus its tasks via
       `getTasksForRequirement` (depends on T007, T008)
-- [ ] T015 [US1] [P] Build a read-only `TaskList` in `src/components/TaskList.tsx` listing every
+- [X] T015 [US1] [P] Build a read-only `TaskList` in `src/components/TaskList.tsx` listing every
       task's title/estimated effort/status plus its requirement(s) via `getRequirementsForTask`
       (depends on T007, T008)
-- [ ] T016 [US1] Compose `Workspace` in `src/components/Workspace.tsx` from `ProjectHeader` +
+- [X] T016 [US1] Compose `Workspace` in `src/components/Workspace.tsx` from `ProjectHeader` +
       `RequirementList` + `TaskList`, reading from `useProjectStore` (depends on T013, T014, T015)
-- [ ] T017 [US1] Replace the default Vite scaffold in `src/App.tsx` with `<Workspace />` (depends
+- [X] T017 [US1] Replace the default Vite scaffold in `src/App.tsx` with `<Workspace />` (depends
       on T016)
-- [ ] T018 [US1] Component smoke test in `src/components/Workspace.test.tsx` (React Testing
+- [X] T018 [US1] Component smoke test in `src/components/Workspace.test.tsx` (React Testing
       Library) asserting the seeded project's name, at least one seeded requirement's description,
       at least one seeded task's title, and a progress value all render on initial load (depends
       on T017)
@@ -138,7 +138,7 @@ remain in the task list (spec.md User Story 2 acceptance scenarios).
 
 ### Tests for User Story 2
 
-- [ ] T019 [P] [US2] Unit tests in `src/core/requirementOperations.test.ts`: `addRequirement`
+- [X] T019 [P] [US2] Unit tests in `src/core/requirementOperations.test.ts`: `addRequirement`
       appends a new requirement defaulting to `status: "Proposed"` and rejects an
       empty/whitespace-only description; `editRequirement` updates only the given fields;
       `removeRequirement` deletes the requirement AND every `Association` referencing it while
@@ -147,19 +147,19 @@ remain in the task list (spec.md User Story 2 acceptance scenarios).
 
 ### Implementation for User Story 2
 
-- [ ] T020 [US2] Implement `addRequirement`, `editRequirement`, `removeRequirement` in
+- [X] T020 [US2] Implement `addRequirement`, `editRequirement`, `removeRequirement` in
       `src/core/requirementOperations.ts` per `contracts/core-api.md`, satisfying T019 (depends on
       T004, T005, T019)
-- [ ] T021 [US2] Extend `useProjectStore` in `src/state/useProjectStore.ts` with
+- [X] T021 [US2] Extend `useProjectStore` in `src/state/useProjectStore.ts` with
       `addRequirement`/`editRequirement`/`removeRequirement` dispatchers that call the T020
       operations and replace the stored `project` with their return value (depends on T020, T008)
-- [ ] T022 [US2] Add an "add requirement" form (description + priority) to
+- [X] T022 [US2] Add an "add requirement" form (description + priority) to
       `src/components/RequirementList.tsx`, wired to the store's `addRequirement` (depends on
       T021, T014)
-- [ ] T023 [US2] Add inline edit controls (description, priority, status) to
+- [X] T023 [US2] Add inline edit controls (description, priority, status) to
       `src/components/RequirementList.tsx`, wired to the store's `editRequirement` (depends on
       T021, T014)
-- [ ] T024 [US2] Add a remove control to `src/components/RequirementList.tsx`, wired to the
+- [X] T024 [US2] Add a remove control to `src/components/RequirementList.tsx`, wired to the
       store's `removeRequirement`, and confirm in `src/components/TaskList.tsx` that a removed
       requirement's tasks remain listed, now without that requirement link (depends on T021, T014,
       T015)
@@ -181,7 +181,7 @@ acceptance scenarios).
 
 ### Tests for User Story 3
 
-- [ ] T025 [P] [US3] Unit tests in `src/core/taskOperations.test.ts`: `addTask` defaults `status`
+- [X] T025 [P] [US3] Unit tests in `src/core/taskOperations.test.ts`: `addTask` defaults `status`
       to `"NotStarted"` when omitted; `editTask` updates only the given fields; `removeTask`
       deletes the task AND every `Association` referencing it (data-model Integrity Rule 2);
       `associateTaskWithRequirement` on an already-linked pair does not create a duplicate
@@ -190,23 +190,23 @@ acceptance scenarios).
 
 ### Implementation for User Story 3
 
-- [ ] T026 [US3] Implement `addTask`, `editTask`, `removeTask`, `associateTaskWithRequirement`,
+- [X] T026 [US3] Implement `addTask`, `editTask`, `removeTask`, `associateTaskWithRequirement`,
       `unassociateTaskFromRequirement` in `src/core/taskOperations.ts` per `contracts/core-api.md`,
       satisfying T025 (depends on T004, T005, T025)
-- [ ] T027 [US3] Extend `useProjectStore` in `src/state/useProjectStore.ts` with
+- [X] T027 [US3] Extend `useProjectStore` in `src/state/useProjectStore.ts` with
       `addTask`/`editTask`/`removeTask`/`associateTask`/`unassociateTask` dispatchers that call the
       T026 operations and replace the stored `project` with their return value (depends on T026,
       T021)
-- [ ] T028 [US3] Add a "create task" form (title, estimated effort, status) to
+- [X] T028 [US3] Add a "create task" form (title, estimated effort, status) to
       `src/components/TaskList.tsx`, wired to the store's `addTask` (depends on T027, T015)
-- [ ] T029 [US3] Add inline edit controls (title, estimated effort, status) to
+- [X] T029 [US3] Add inline edit controls (title, estimated effort, status) to
       `src/components/TaskList.tsx`, wired to the store's `editTask`, and confirm the
       `ProjectHeader` progress figure updates immediately when a task's status changes (depends on
       T027, T015, T013)
-- [ ] T030 [US3] Add associate/unassociate controls (linking an existing task to an existing
+- [X] T030 [US3] Add associate/unassociate controls (linking an existing task to an existing
       requirement and removing that link) to `src/components/TaskList.tsx`, wired to the store's
       `associateTask`/`unassociateTask` (depends on T027, T014, T015)
-- [ ] T031 [US3] Add a remove control to `src/components/TaskList.tsx`, wired to the store's
+- [X] T031 [US3] Add a remove control to `src/components/TaskList.tsx`, wired to the store's
       `removeTask`, and confirm in `src/components/RequirementList.tsx` that the removed task no
       longer appears under any requirement (depends on T027, T014, T015)
 
@@ -219,12 +219,12 @@ view + requirement management + task management and linking.
 
 **Purpose**: Final quality pass across all stories.
 
-- [ ] T032 [P] Add validation-error feedback (empty description/title, non-positive estimated
+- [X] T032 [P] Add validation-error feedback (empty description/title, non-positive estimated
       effort) to the forms in `src/components/RequirementList.tsx` and
       `src/components/TaskList.tsx`
-- [ ] T033 [P] Review `src/core/*` for constitution compliance: no `react`/`react-dom`/DOM imports,
+- [X] T033 [P] Review `src/core/*` for constitution compliance: no `react`/`react-dom`/DOM imports,
       no `any` in domain types (Principle I and Technology & Architecture Constraints)
-- [ ] T034 Run `npm run build` (`tsc -b && vite build`) and fix any type errors
+- [X] T034 Run `npm run build` (`tsc -b && vite build`) and fix any type errors
 - [ ] T035 Walk through every scenario in `specs/001-project-workspace/quickstart.md` manually
       against `npm run dev` and confirm each still holds
 

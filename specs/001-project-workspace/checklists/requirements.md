@@ -1,4 +1,4 @@
-# Specification Quality Checklist: Ripple Impact Analysis
+# Specification Quality Checklist: Project Workspace
 
 **Purpose**: Validate specification completeness and quality before proceeding to planning
 **Created**: 2026-08-28
@@ -32,6 +32,8 @@
 ## Notes
 
 - No [NEEDS CLARIFICATION] markers were needed: reasonable, industry-standard defaults were
-  chosen for effort units, schedule-impact derivation, and risk-level categorization, and
-  recorded in the spec's Assumptions section.
+  chosen for effort units, status value sets, and progress-calculation rules, and recorded in the
+  spec's Assumptions section.
+- Scope is explicitly bounded to exclude task-to-task dependencies and requirement-change impact
+  analysis, which are reserved for a separate, later feature.
 - All items pass on first validation pass; no spec revisions were required.
